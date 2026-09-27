@@ -11,7 +11,7 @@ inference by taking a weighted average (soft-argmax) down each column.
 
 Usage:
     python render_heatmaps.py --labels labels.json --images_dir data \
-        --output_dir heatmaps --sigma 3.0
+        --output_dir heatmaps --sigma 8.0
 
 Produces one .npy heatmap per frame (float32, same H x W as the source
 image, values in [0, 1]), plus a side-by-side PNG preview of all frames
@@ -25,7 +25,7 @@ import numpy as np
 from PIL import Image
 
 
-def render_heatmap(lines, height, width, sigma=3.0):
+def render_heatmap(lines, height, width, sigma=8.0):
     """
     Build a single-channel heatmap for one frame. For every labeled line,
     lay down a 1D Gaussian in the y-direction at each x column along the
@@ -46,7 +46,7 @@ def render_heatmap(lines, height, width, sigma=3.0):
     return heatmap
 
 
-def extract_lines_from_heatmap(heatmap, threshold=0.3, min_width=15):
+def extract_lines_from_heatmap(heatmap, threshold=0.3, min_width=15, merge_y=4.0):
     """
     The inverse operation: given a predicted heatmap (from the trained
     model), recover discrete line instances with sub-pixel y positions.
@@ -72,8 +72,25 @@ def extract_lines_from_heatmap(heatmap, threshold=0.3, min_width=15):
             y_subpixel = float(np.average(ys_here, weights=ws_here))  # soft-argmax
             centerline.append([x, y_subpixel])
         lines.append(centerline)
-    lines.sort(key=lambda L: L[0][1])
-    return lines
+    lines.sort(key=lambda line: np.median([point[1] for point in line]))
+
+    # A physical line may be split into disconnected blobs by a dim gap.
+    # Merge fragments at essentially the same y-level so they count once.
+    merged = []
+    for line in lines:
+        line_y = float(np.median([point[1] for point in line]))
+        if merged:
+            previous_y = float(np.median([point[1] for point in merged[-1]]))
+        else:
+            previous_y = float("inf")
+        if merged and abs(line_y - previous_y) <= merge_y:
+            by_x = {}
+            for x, y in merged[-1] + line:
+                by_x.setdefault(int(x), []).append(float(y))
+            merged[-1] = [[x, float(np.mean(ys))] for x, ys in sorted(by_x.items())]
+        else:
+            merged.append(line)
+    return merged
 
 
 def main():
@@ -81,7 +98,8 @@ def main():
     parser.add_argument("--labels", required=True, help="labels.json from extract_line_labels.py")
     parser.add_argument("--images_dir", required=True, help="Folder with the source frames (for size + preview)")
     parser.add_argument("--output_dir", required=True, help="Where to save .npy heatmaps")
-    parser.add_argument("--sigma", type=float, default=3.0, help="Gaussian ridge width in pixels")
+    parser.add_argument("--sigma", type=float, default=8.0,
+                        help="Gaussian ridge width at source resolution; 8 px becomes ~2 px after 4x resize")
     parser.add_argument("--preview", default="heatmap_preview.png", help="Path for the visual sanity-check PNG")
     args = parser.parse_args()
 

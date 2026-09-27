@@ -1,5 +1,6 @@
 import argparse
 import glob
+import json
 import os
 import random
 
@@ -83,12 +84,15 @@ class UNetResNet18(nn.Module):
 # Dataset
 # ---------------------------------------------------------------------------
 class RHEEDHeatmapDataset(Dataset):
-    def __init__(self, images_dir, heatmaps_dir, frame_names, size=(275, 344), augment=False):
+    def __init__(self, images_dir, heatmaps_dir, frame_names, size=(275, 344), augment=False,
+                 erase_prob=0.0, scale_jitter=0.0):
         self.images_dir = images_dir
         self.heatmaps_dir = heatmaps_dir
         self.frame_names = frame_names
         self.size = size  # (height, width)
         self.augment = augment
+        self.erase_prob = erase_prob
+        self.scale_jitter = scale_jitter
 
     def __len__(self):
         return len(self.frame_names)
@@ -106,17 +110,91 @@ class RHEEDHeatmapDataset(Dataset):
 
         return img, heatmap
 
+    @staticmethod
+    def _translate(array, shift_y, shift_x):
+        """Translate without wraparound, which would create false edge features."""
+        output = np.zeros_like(array)
+        h, w = array.shape
+        src_y0 = max(0, -shift_y)
+        src_y1 = min(h, h - shift_y)
+        src_x0 = max(0, -shift_x)
+        src_x1 = min(w, w - shift_x)
+        dst_y0 = max(0, shift_y)
+        dst_y1 = dst_y0 + (src_y1 - src_y0)
+        dst_x0 = max(0, shift_x)
+        dst_x1 = dst_x0 + (src_x1 - src_x0)
+        output[dst_y0:dst_y1, dst_x0:dst_x1] = array[src_y0:src_y1, src_x0:src_x1]
+        return output
+
+    @staticmethod
+    def _erase_line(img, heatmap, half_height=7, margin_x=10):
+        """
+        Remove one labeled line from both image and target, so the network
+        sees lattice slots that are empty and cannot assume every expected
+        order is present. The band is refilled by interpolating each column
+        between the rows just outside it, plus noise matching the local
+        texture. At least one line is always kept.
+        """
+        profile = heatmap.max(axis=1)
+        rows = [r for r in range(1, len(profile) - 1)
+                if profile[r] >= 0.5 and profile[r] >= profile[r - 1]
+                and profile[r] > profile[r + 1]]
+        if len(rows) < 2:
+            return img, heatmap
+        row = random.choice(rows)
+        h, w = img.shape
+        y0, y1 = row - half_height, row + half_height + 1
+        if y0 < 1 or y1 > h - 1:
+            return img, heatmap
+        columns = np.where(heatmap[max(0, row - 2):row + 3].max(axis=0) >= 0.3)[0]
+        x0 = max(0, columns.min() - margin_x)
+        x1 = min(w, columns.max() + margin_x + 1)
+        img = img.copy()
+        heatmap = heatmap.copy()
+        above = img[y0 - 1, x0:x1]
+        below = img[y1, x0:x1]
+        t = np.linspace(0, 1, y1 - y0)[:, None]
+        texture = np.concatenate([img[max(0, y0 - 6):y0, x0:x1], img[y1:y1 + 6, x0:x1]])
+        fill = (1 - t) * above + t * below
+        fill += np.random.normal(0, texture.std() * 0.5, fill.shape)
+        img[y0:y1, x0:x1] = np.clip(fill, 0, 1)
+        heatmap[y0:y1, x0:x1] = 0.0
+        return img, heatmap
+
+    @staticmethod
+    def _scale_vertical(array, factor, center):
+        """Stretch rows about ``center`` by ``factor`` (bilinear), keeping the size."""
+        h = array.shape[0]
+        source = center + (np.arange(h) - center) / factor
+        low = np.floor(source).astype(int)
+        frac = (source - low)[:, None]
+        valid = (low >= 0) & (low + 1 < h)
+        low = np.clip(low, 0, h - 2)
+        out = (1 - frac) * array[low] + frac * array[low + 1]
+        out[~valid] = 0.0
+        return out.astype(np.float32)
+
     def _augment(self, img, heatmap):
+        if self.erase_prob and random.random() < self.erase_prob:
+            img, heatmap = self._erase_line(img, heatmap)
+        if self.scale_jitter and random.random() < 0.8:
+            factor = random.uniform(1 - self.scale_jitter, 1 + self.scale_jitter)
+            center = random.uniform(0.3, 0.7) * img.shape[0]
+            img = self._scale_vertical(img, factor, center)
+            heatmap = self._scale_vertical(heatmap, factor, center)
+        # Vertical motion is important here: without it, a tiny dataset lets
+        # the network memorize a fixed y-position grid instead of reading spots.
+        if random.random() < 0.8:
+            shift_x = random.randint(-20, 20)
+            shift_y = random.randint(-20, 20)
+            img = self._translate(img, shift_y, shift_x)
+            heatmap = self._translate(heatmap, shift_y, shift_x)
         if random.random() < 0.5:
-            shift = random.randint(-15, 15)
-            img = np.roll(img, shift, axis=1)
-            heatmap = np.roll(heatmap, shift, axis=1)
+            img = np.clip(img * random.uniform(0.85, 1.15), 0, 1)
         if random.random() < 0.5:
-            img = np.clip(img * random.uniform(0.8, 1.2), 0, 1)
-        if random.random() < 0.5:
-            img = np.clip(img + random.uniform(-0.05, 0.05), 0, 1)
+            img = np.clip(img + random.uniform(-0.03, 0.03), 0, 1)
         if random.random() < 0.3:
-            img = np.clip(img + np.random.normal(0, 0.02, img.shape), 0, 1).astype(np.float32)
+            img = np.clip(img + np.random.normal(0, 0.015, img.shape), 0, 1).astype(np.float32)
         return img, heatmap
 
     def __getitem__(self, idx):
@@ -129,7 +207,7 @@ class RHEEDHeatmapDataset(Dataset):
         return img_t, heatmap_t
 
 
-def weighted_mse_loss(pred, target, pos_weight=80.0):
+def weighted_mse_loss(pred, target, pos_weight=30.0):
     """
     Plain MSE fails here: line pixels are <0.5% of the image, so a model
     that predicts all-zero everywhere already gets a very low loss and
@@ -139,6 +217,29 @@ def weighted_mse_loss(pred, target, pos_weight=80.0):
     """
     weight = 1.0 + pos_weight * target
     return torch.mean(weight * (pred - target) ** 2)
+
+
+def soft_dice_score(pred, target, eps=1e-6):
+    dims = tuple(range(1, pred.ndim))
+    intersection = torch.sum(pred * target, dim=dims)
+    denominator = torch.sum(pred.square(), dim=dims) + torch.sum(target.square(), dim=dims)
+    return torch.mean((2.0 * intersection + eps) / (denominator + eps))
+
+
+def combined_heatmap_loss(pred, target, pos_weight=30.0, dice_weight=0.5):
+    mse = weighted_mse_loss(pred, target, pos_weight=pos_weight)
+    dice = 1.0 - soft_dice_score(pred, target)
+    return mse + dice_weight * dice
+
+
+def threshold_f1_score(pred, target, threshold=0.3, eps=1e-6):
+    pred_mask = pred >= threshold
+    target_mask = target >= threshold
+    dims = tuple(range(1, pred.ndim))
+    true_positive = torch.sum(pred_mask & target_mask, dim=dims).float()
+    predicted = torch.sum(pred_mask, dim=dims).float()
+    actual = torch.sum(target_mask, dim=dims).float()
+    return torch.mean((2.0 * true_positive + eps) / (predicted + actual + eps))
 
 
 # ---------------------------------------------------------------------------
@@ -154,39 +255,76 @@ def main():
     parser.add_argument("--height", type=int, default=275)
     parser.add_argument("--width", type=int, default=344)
     parser.add_argument("--val_frames", default="", help="Comma-separated frame filenames to hold out, e.g. 7.png,8.png")
+    parser.add_argument("--exclude_frames", default="",
+                        help="Comma-separated frames to leave out entirely (not used for validation)")
     parser.add_argument("--checkpoint", default="unet_lines.pt")
     parser.add_argument("--no_pretrained", action="store_true", help="Train encoder from scratch instead")
-    parser.add_argument("--pos_weight", type=float, default=80.0,
+    parser.add_argument("--pos_weight", type=float, default=30.0,
                          help="How much more heavily to weight line pixels vs. background in the loss")
+    parser.add_argument("--dice_weight", type=float, default=0.5,
+                        help="Weight of soft-Dice loss added to weighted MSE")
+    parser.add_argument("--erase_prob", type=float, default=0.0,
+                        help="Probability of erasing one labeled line from image and target")
+    parser.add_argument("--scale_jitter", type=float, default=0.0,
+                        help="Max fractional vertical stretch/squash, e.g. 0.1 for +/-10%%")
+    parser.add_argument("--batch_size", type=int, default=4)
+    parser.add_argument("--eval_every", type=int, default=5)
+    parser.add_argument("--patience", type=int, default=40,
+                        help="Stop after this many epochs without validation-Dice improvement; 0 disables")
+    parser.add_argument("--seed", type=int, default=1337)
     args = parser.parse_args()
 
-    all_frames = sorted(os.path.basename(p) for p in glob.glob(os.path.join(args.heatmaps_dir, "*.npy")))
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
+    all_frames = [os.path.basename(p) for p in glob.glob(os.path.join(args.heatmaps_dir, "*.npy"))]
     all_frames = [f.replace(".npy", ".png") for f in all_frames]
+    all_frames.sort(key=lambda f: (0, int(os.path.splitext(f)[0]))
+                    if os.path.splitext(f)[0].isdigit() else (1, f))
     val_frames = set(f for f in args.val_frames.split(",") if f)
-    train_frames = [f for f in all_frames if f not in val_frames]
+    missing_val = val_frames.difference(all_frames)
+    if missing_val:
+        raise ValueError(f"Validation frames have no heatmap: {sorted(missing_val)}")
+    excluded = set(f for f in args.exclude_frames.split(",") if f)
+    train_frames = [f for f in all_frames if f not in val_frames and f not in excluded]
+    if not train_frames:
+        raise ValueError("No training frames remain after applying --val_frames")
 
     print(f"Training on {len(train_frames)} frame(s): {train_frames}")
     if val_frames:
         print(f"Holding out {len(val_frames)} frame(s) for validation: {sorted(val_frames)}")
 
     size = (args.height, args.width)
-    train_ds = RHEEDHeatmapDataset(args.images_dir, args.heatmaps_dir, train_frames, size=size, augment=True)
-    train_loader = DataLoader(train_ds, batch_size=min(4, len(train_ds)), shuffle=True)
+    train_ds = RHEEDHeatmapDataset(args.images_dir, args.heatmaps_dir, train_frames, size=size, augment=True,
+                                   erase_prob=args.erase_prob, scale_jitter=args.scale_jitter)
+    train_loader = DataLoader(train_ds, batch_size=min(args.batch_size, len(train_ds)), shuffle=True)
 
     val_loader = None
     if val_frames:
         val_ds = RHEEDHeatmapDataset(args.images_dir, args.heatmaps_dir, sorted(val_frames), size=size, augment=False)
         val_loader = DataLoader(val_ds, batch_size=len(val_ds), shuffle=False)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
     print(f"Using device: {device}")
 
     model = UNetResNet18(pretrained=not args.no_pretrained).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    loss_fn = lambda pred, target: weighted_mse_loss(pred, target, pos_weight=args.pos_weight)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="max", factor=0.5, patience=3, min_lr=1e-6)
+    loss_fn = lambda pred, target: combined_heatmap_loss(
+        pred, target, pos_weight=args.pos_weight, dice_weight=args.dice_weight)
 
     best_val_loss = float("inf")
+    best_val_dice = -1.0
     best_epoch = None
+    epochs_without_improvement = 0
+    history = []
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -201,34 +339,65 @@ def main():
             train_loss += loss.item() * imgs.size(0)
         train_loss /= len(train_ds)
 
-        if epoch % 10 == 0 or epoch == 1:
+        if epoch % args.eval_every == 0 or epoch == 1:
             msg = f"Epoch {epoch:4d}/{args.epochs}  train_loss={train_loss:.5f}"
+            record = {"epoch": epoch, "train_loss": train_loss,
+                      "lr": optimizer.param_groups[0]["lr"]}
             if val_loader is not None:
                 model.eval()
                 with torch.no_grad():
                     for imgs, heatmaps in val_loader:
                         imgs, heatmaps = imgs.to(device), heatmaps.to(device)
-                        val_loss = loss_fn(model(imgs), heatmaps).item()
-                msg += f"  val_loss={val_loss:.5f}"
-                if val_loss < best_val_loss:
+                        val_preds = model(imgs)
+                        val_loss = loss_fn(val_preds, heatmaps).item()
+                        val_dice = soft_dice_score(val_preds, heatmaps).item()
+                        val_f1 = threshold_f1_score(val_preds, heatmaps).item()
+                scheduler.step(val_dice)
+                msg += (f"  val_loss={val_loss:.5f}  val_dice={val_dice:.4f}"
+                        f"  val_f1={val_f1:.4f}")
+                record.update({"val_loss": val_loss, "val_dice": val_dice,
+                               "val_f1": val_f1})
+                if val_dice > best_val_dice:
                     best_val_loss = val_loss
+                    best_val_dice = val_dice
                     best_epoch = epoch
+                    epochs_without_improvement = 0
                     torch.save({
                         "model_state_dict": model.state_dict(),
                         "size": size,
                         "epoch": epoch,
                         "val_loss": val_loss,
+                        "val_dice": val_dice,
+                        "val_f1": val_f1,
                         "val_frames": sorted(val_frames),
+                        "pos_weight": args.pos_weight,
+                        "dice_weight": args.dice_weight,
+                        "seed": args.seed,
+                        "erase_prob": args.erase_prob,
+                        "scale_jitter": args.scale_jitter,
                     }, args.checkpoint)
                     msg += "  [saved best]"
+                else:
+                    epochs_without_improvement += args.eval_every
+            history.append(record)
             print(msg)
+            if (val_loader is not None and args.patience > 0 and
+                    epochs_without_improvement >= args.patience):
+                print(f"Early stopping: no validation-Dice improvement for "
+                      f"{epochs_without_improvement} epochs")
+                break
 
     if val_loader is None:
         torch.save({"model_state_dict": model.state_dict(), "size": size}, args.checkpoint)
         print(f"\nSaved final trained model to {args.checkpoint}")
     else:
         print(f"\nSaved best model from epoch {best_epoch} to {args.checkpoint} "
-              f"(val_loss={best_val_loss:.5f})")
+              f"(val_dice={best_val_dice:.4f}, val_loss={best_val_loss:.5f})")
+
+    history_path = args.checkpoint + ".history.json"
+    with open(history_path, "w") as f:
+        json.dump(history, f, indent=2)
+    print(f"Saved training history to {history_path}")
 
 
 if __name__ == "__main__":
