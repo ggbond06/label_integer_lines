@@ -1,0 +1,126 @@
+Fold 0: held out [np.str_('1.png'), np.str_('2.png'), np.str_('3.png'), np.str_('4.png'), np.str_('5.png'), np.str_('6.png'), np.str_('7.png'), np.str_('8.png'), np.str_('9.png'), np.str_('10.png'), np.str_('11.png'), np.str_('12.png')]
+Training on 48 frame(s): ['13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png', '22.png', '23.png', '24.png', '25.png', '26.png', '27.png', '28.png', '29.png', '30.png', '31.png', '32.png', '33.png', '34.png', '35.png', '36.png', '37.png', '38.png', '39.png', '40.png', '41.png', '42.png', '43.png', '44.png', '45.png', '46.png', '47.png', '48.png', '49.png', '50.png', '51.png', '52.png', '53.png', '54.png', '55.png', '56.png', '57.png', '58.png', '59.png', '60.png']
+Using device: mps
+Epoch    1/40  train_loss=0.55999
+Epoch   40/40  train_loss=0.03327
+
+Saved final trained model to experiments/cv_60_round2/seed7/fold0.pt
+Saved training history to experiments/cv_60_round2/seed7/fold0.pt.history.json
+Fold 1: held out [np.str_('13.png'), np.str_('14.png'), np.str_('15.png'), np.str_('16.png'), np.str_('17.png'), np.str_('18.png'), np.str_('19.png'), np.str_('20.png'), np.str_('21.png'), np.str_('22.png'), np.str_('23.png'), np.str_('24.png')]
+Training on 48 frame(s): ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '25.png', '26.png', '27.png', '28.png', '29.png', '30.png', '31.png', '32.png', '33.png', '34.png', '35.png', '36.png', '37.png', '38.png', '39.png', '40.png', '41.png', '42.png', '43.png', '44.png', '45.png', '46.png', '47.png', '48.png', '49.png', '50.png', '51.png', '52.png', '53.png', '54.png', '55.png', '56.png', '57.png', '58.png', '59.png', '60.png']
+Using device: mps
+Epoch    1/40  train_loss=0.55238
+Epoch   40/40  train_loss=0.02916
+
+Saved final trained model to experiments/cv_60_round2/seed7/fold1.pt
+Saved training history to experiments/cv_60_round2/seed7/fold1.pt.history.json
+Fold 2: held out [np.str_('25.png'), np.str_('26.png'), np.str_('27.png'), np.str_('28.png'), np.str_('29.png'), np.str_('30.png'), np.str_('31.png'), np.str_('32.png'), np.str_('33.png'), np.str_('34.png'), np.str_('35.png'), np.str_('36.png')]
+Training on 48 frame(s): ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png', '22.png', '23.png', '24.png', '37.png', '38.png', '39.png', '40.png', '41.png', '42.png', '43.png', '44.png', '45.png', '46.png', '47.png', '48.png', '49.png', '50.png', '51.png', '52.png', '53.png', '54.png', '55.png', '56.png', '57.png', '58.png', '59.png', '60.png']
+Using device: mps
+Epoch    1/40  train_loss=0.55449
+Epoch   40/40  train_loss=0.03144
+
+Saved final trained model to experiments/cv_60_round2/seed7/fold2.pt
+Saved training history to experiments/cv_60_round2/seed7/fold2.pt.history.json
+Fold 3: held out [np.str_('37.png'), np.str_('38.png'), np.str_('39.png'), np.str_('40.png'), np.str_('41.png'), np.str_('42.png'), np.str_('43.png'), np.str_('44.png'), np.str_('45.png'), np.str_('46.png'), np.str_('47.png'), np.str_('48.png')]
+Training on 48 frame(s): ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png', '22.png', '23.png', '24.png', '25.png', '26.png', '27.png', '28.png', '29.png', '30.png', '31.png', '32.png', '33.png', '34.png', '35.png', '36.png', '49.png', '50.png', '51.png', '52.png', '53.png', '54.png', '55.png', '56.png', '57.png', '58.png', '59.png', '60.png']
+Using device: mps
+Epoch    1/40  train_loss=0.55185
+Epoch   40/40  train_loss=0.03218
+
+Saved final trained model to experiments/cv_60_round2/seed7/fold3.pt
+Saved training history to experiments/cv_60_round2/seed7/fold3.pt.history.json
+Fold 4: held out [np.str_('49.png'), np.str_('50.png'), np.str_('51.png'), np.str_('52.png'), np.str_('53.png'), np.str_('54.png'), np.str_('55.png'), np.str_('56.png'), np.str_('57.png'), np.str_('58.png'), np.str_('59.png'), np.str_('60.png')]
+Training on 48 frame(s): ['1.png', '2.png', '3.png', '4.png', '5.png', '6.png', '7.png', '8.png', '9.png', '10.png', '11.png', '12.png', '13.png', '14.png', '15.png', '16.png', '17.png', '18.png', '19.png', '20.png', '21.png', '22.png', '23.png', '24.png', '25.png', '26.png', '27.png', '28.png', '29.png', '30.png', '31.png', '32.png', '33.png', '34.png', '35.png', '36.png', '37.png', '38.png', '39.png', '40.png', '41.png', '42.png', '43.png', '44.png', '45.png', '46.png', '47.png', '48.png']
+Using device: mps
+Epoch    1/40  train_loss=0.55090
+Epoch   40/40  train_loss=0.03247
+
+Saved final trained model to experiments/cv_60_round2/seed7/fold4.pt
+Saved training history to experiments/cv_60_round2/seed7/fold4.pt.history.json
+
+method    high   low       P      R     F1   TP  FP  FN  |dy|px extIoU
+profile   0.50  0.50   0.905  0.954  0.929  351  37  17    3.81  0.768
+profile   0.40  0.40   0.896  0.959  0.927  353  41  15    3.81  0.765
+profile   0.30  0.30   0.894  0.965  0.928  355  42  13    3.82  0.765
+profile   0.20  0.20   0.879  0.970  0.922  357  49  11    3.81  0.762
+profile   0.15  0.15   0.857  0.976  0.912  359  60   9    3.79  0.759
+profile   0.10  0.10   0.845  0.978  0.907  360  66   8    3.78  0.758
+profile   0.05  0.05   0.820  0.978  0.892  360  79   8    3.78  0.758
+lattice   0.50  0.20   0.888  0.970  0.927  357  45  11    3.81  0.762
+lattice   0.50  0.15   0.867  0.976  0.918  359  55   9    3.79  0.759
+lattice   0.50  0.10   0.855  0.978  0.913  360  61   8    3.78  0.758
+lattice   0.50  0.05   0.835  0.978  0.901  360  71   8    3.78  0.758
+lattice   0.40  0.20   0.886  0.970  0.926  357  46  11    3.81  0.762
+lattice   0.40  0.15   0.867  0.976  0.918  359  55   9    3.79  0.759
+lattice   0.40  0.10   0.855  0.978  0.913  360  61   8    3.78  0.758
+lattice   0.40  0.05   0.835  0.978  0.901  360  71   8    3.78  0.758
+lattice   0.30  0.20   0.886  0.970  0.926  357  46  11    3.81  0.762
+lattice   0.30  0.15   0.867  0.976  0.918  359  55   9    3.79  0.759
+lattice   0.30  0.10   0.855  0.978  0.913  360  61   8    3.78  0.758
+lattice   0.30  0.05   0.835  0.978  0.901  360  71   8    3.78  0.758
+
+Per frame (lattice high=0.40 low=0.15):
+    1.png  target=5  tp=4 fp=1 fn=1  missed_y=[947.0]
+    2.png  target=3  tp=3 fp=1 fn=0  missed_y=[]
+    3.png  target=6  tp=4 fp=1 fn=2  missed_y=[343.5, 781.0]
+    4.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+    5.png  target=9  tp=9 fp=1 fn=0  missed_y=[]
+    6.png  target=7  tp=7 fp=1 fn=0  missed_y=[]
+    7.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+    8.png  target=6  tp=6 fp=0 fn=0  missed_y=[]
+    9.png  target=4  tp=4 fp=2 fn=0  missed_y=[]
+   10.png  target=6  tp=6 fp=0 fn=0  missed_y=[]
+   11.png  target=9  tp=9 fp=1 fn=0  missed_y=[]
+   12.png  target=8  tp=8 fp=1 fn=0  missed_y=[]
+   13.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   14.png  target=5  tp=5 fp=2 fn=0  missed_y=[]
+   15.png  target=4  tp=4 fp=3 fn=0  missed_y=[]
+   16.png  target=7  tp=7 fp=0 fn=0  missed_y=[]
+   17.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   18.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   19.png  target=7  tp=7 fp=0 fn=0  missed_y=[]
+   20.png  target=4  tp=4 fp=1 fn=0  missed_y=[]
+   21.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   22.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   23.png  target=5  tp=5 fp=0 fn=0  missed_y=[]
+   24.png  target=5  tp=5 fp=1 fn=0  missed_y=[]
+   25.png  target=2  tp=2 fp=1 fn=0  missed_y=[]
+   26.png  target=5  tp=5 fp=1 fn=0  missed_y=[]
+   27.png  target=9  tp=9 fp=2 fn=0  missed_y=[]
+   28.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   29.png  target=8  tp=8 fp=1 fn=0  missed_y=[]
+   30.png  target=6  tp=5 fp=2 fn=1  missed_y=[743.0]
+   31.png  target=8  tp=8 fp=2 fn=0  missed_y=[]
+   32.png  target=6  tp=6 fp=1 fn=0  missed_y=[]
+   33.png  target=7  tp=7 fp=3 fn=0  missed_y=[]
+   34.png  target=4  tp=4 fp=1 fn=0  missed_y=[]
+   35.png  target=5  tp=3 fp=2 fn=2  missed_y=[94.5, 853.5]
+   36.png  target=4  tp=4 fp=0 fn=0  missed_y=[]
+   37.png  target=9  tp=9 fp=1 fn=0  missed_y=[]
+   38.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   39.png  target=8  tp=8 fp=1 fn=0  missed_y=[]
+   40.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   41.png  target=7  tp=7 fp=1 fn=0  missed_y=[]
+   42.png  target=2  tp=2 fp=2 fn=0  missed_y=[]
+   43.png  target=4  tp=4 fp=1 fn=0  missed_y=[]
+   44.png  target=5  tp=5 fp=3 fn=0  missed_y=[]
+   45.png  target=8  tp=8 fp=1 fn=0  missed_y=[]
+   46.png  target=4  tp=4 fp=1 fn=0  missed_y=[]
+   47.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+   48.png  target=5  tp=5 fp=1 fn=0  missed_y=[]
+   49.png  target=4  tp=4 fp=1 fn=0  missed_y=[]
+   50.png  target=6  tp=5 fp=0 fn=1  missed_y=[931.5]
+   51.png  target=6  tp=6 fp=3 fn=0  missed_y=[]
+   52.png  target=6  tp=6 fp=0 fn=0  missed_y=[]
+   53.png  target=8  tp=7 fp=0 fn=1  missed_y=[927.5]
+   54.png  target=3  tp=3 fp=0 fn=0  missed_y=[]
+   55.png  target=4  tp=4 fp=3 fn=0  missed_y=[]
+   56.png  target=3  tp=3 fp=1 fn=0  missed_y=[]
+   57.png  target=1  tp=1 fp=3 fn=0  missed_y=[]
+   58.png  target=5  tp=5 fp=0 fn=0  missed_y=[]
+   59.png  target=10  tp=9 fp=0 fn=1  missed_y=[968.5]
+   60.png  target=8  tp=8 fp=0 fn=0  missed_y=[]
+
+Pixel means: {'pixel_f1': 0.688, 'tolerant_f1': 0.869, 'soft_dice': 0.783}
+Saved experiments/cv_60_round2/seed7/cv_results.json

@@ -1,0 +1,148 @@
+{
+  "checkpoint": "models/ensemble_60_round2/seed1337.pt,models/ensemble_60_round2/seed7.pt,models/ensemble_60_round2/seed2024.pt",
+  "checkpoint_epoch": null,
+  "checkpoint_val_dice": null,
+  "threshold": 0.4,
+  "lattice_low": 0.15,
+  "tolerance_px": 20.0,
+  "averages": null,
+  "line_metrics": null,
+  "frames": [
+    {
+      "frame": "rheed_unused_frame_sep27.png",
+      "prediction_max": 0.9355909824371338,
+      "threshold": 0.4,
+      "metrics": null,
+      "lines": {
+        "profile": {
+          "lines": [
+            {
+              "y": 175.23762381076813,
+              "x0": 728.0,
+              "x1": 891.0,
+              "score": 0.915777862071991,
+              "source": "direct"
+            },
+            {
+              "y": 270.0047709941864,
+              "x0": 564.0,
+              "x1": 895.0,
+              "score": 0.8301750421524048,
+              "source": "direct"
+            },
+            {
+              "y": 365.77184507250786,
+              "x0": 736.0,
+              "x1": 883.0,
+              "score": 0.5579239130020142,
+              "source": "direct"
+            },
+            {
+              "y": 459.64307177066803,
+              "x0": 716.0,
+              "x1": 879.0,
+              "score": 0.8738961815834045,
+              "source": "direct"
+            },
+            {
+              "y": 555.5270075798035,
+              "x0": 672.0,
+              "x1": 891.0,
+              "score": 0.8870429396629333,
+              "source": "direct"
+            },
+            {
+              "y": 653.0253536999226,
+              "x0": 480.0,
+              "x1": 899.0,
+              "score": 0.9334657788276672,
+              "source": "direct"
+            },
+            {
+              "y": 747.538671374321,
+              "x0": 552.0,
+              "x1": 891.0,
+              "score": 0.9171085357666016,
+              "source": "direct"
+            },
+            {
+              "y": 844.8583835363388,
+              "x0": 748.0,
+              "x1": 883.0,
+              "score": 0.9119653701782227,
+              "source": "direct"
+            }
+          ]
+        },
+        "lattice": {
+          "lines": [
+            {
+              "y": 175.23762381076813,
+              "x0": 728.0,
+              "x1": 891.0,
+              "score": 0.915777862071991,
+              "source": "direct"
+            },
+            {
+              "y": 270.0047709941864,
+              "x0": 564.0,
+              "x1": 895.0,
+              "score": 0.8301750421524048,
+              "source": "direct"
+            },
+            {
+              "y": 365.77184507250786,
+              "x0": 736.0,
+              "x1": 883.0,
+              "score": 0.5579239130020142,
+              "source": "direct"
+            },
+            {
+              "y": 459.64307177066803,
+              "x0": 716.0,
+              "x1": 879.0,
+              "score": 0.8738961815834045,
+              "source": "direct"
+            },
+            {
+              "y": 555.5270075798035,
+              "x0": 672.0,
+              "x1": 891.0,
+              "score": 0.8870429396629333,
+              "source": "direct"
+            },
+            {
+              "y": 653.0253536999226,
+              "x0": 480.0,
+              "x1": 899.0,
+              "score": 0.9334657788276672,
+              "source": "direct"
+            },
+            {
+              "y": 747.538671374321,
+              "x0": 552.0,
+              "x1": 891.0,
+              "score": 0.9171085357666016,
+              "source": "direct"
+            },
+            {
+              "y": 844.8583835363388,
+              "x0": 748.0,
+              "x1": 883.0,
+              "score": 0.9119653701782227,
+              "source": "direct"
+            },
+            {
+              "y": 1016.347131729126,
+              "x0": 812.0,
+              "x1": 867.0,
+              "score": 0.25779059529304504,
+              "source": "lattice"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "panel": "test_frames/prediction_sep27_round2/evaluation_panel.png"
+}

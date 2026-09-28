@@ -31,9 +31,27 @@ test_frames/              unseen frames (raw, background_removed) + predictions
 
 ## Preprocessing (raw RHEED frame -> model input)
 
-1. Grayscale with Rec.709 weights: 0.2126 R + 0.7152 G + 0.0722 B.
-2. Subtract a Gaussian blur (sigma 30), clip negatives to 0.
-3. Stretch so the 99.7th percentile maps to 255.
+Frames are extracted as RGB PNGs with FFmpeg (the raw video is green), then:
+
+1. Grayscale with Pillow `Image.convert("L")` (not FFmpeg `format=gray`,
+   which differs by ~5 gray levels on average).
+2. 3x3 median filter.
+3. Subtract a Gaussian blur (sigma 30) of the denoised image, clip negatives to 0.
+4. Stretch so the 99.7th percentile maps to 255, round to uint8.
+
+`process_video.py` (`remove_background`) implements exactly this and
+reproduces the training frames pixel-for-pixel.
+
+## Whole video
+
+```bash
+pip3 install --user opencv-python-headless   # once, to read .mp4 files
+python3 process_video.py --video "~/Downloads/AlGaSb last 2 min_LOSSLESS.mp4" \
+    --output_dir results/algasb_last2min --every 5
+```
+
+Writes `lines.csv` (every detection, with track id and whether it persisted),
+`tracks.json`, `timeline.png` and sample `overlays/`.
 
 ## Pipeline
 
