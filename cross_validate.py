@@ -11,9 +11,10 @@ Out-of-fold predictions are saved, so the detectors can be re-scored with
 different thresholds without retraining (--skip_training).
 
 Usage:
-    python cross_validate.py --images_dir clean_data_bg_removed \
-        --heatmaps_dir heatmaps_bg_removed_30 \
-        --labels labels_bg_removed_30.json --output_dir cv_bg_removed_30
+    python cross_validate.py --images_dir data/bg_removed/clean \
+        --heatmaps_dir data/heatmaps/60_round2 \
+        --labels data/labels/labels_60_round2.json \
+        --output_dir experiments/cv_60_round2/seed1337
 """
 
 import argparse

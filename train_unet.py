@@ -272,7 +272,10 @@ def main():
     parser.add_argument("--patience", type=int, default=40,
                         help="Stop after this many epochs without validation-Dice improvement; 0 disables")
     parser.add_argument("--seed", type=int, default=1337)
+    parser.add_argument("--device", default="auto", choices=["auto", "cpu", "mps", "cuda"],
+                        help="Force a device; auto prefers cuda, then mps, then cpu")
     args = parser.parse_args()
+    os.makedirs(os.path.dirname(os.path.abspath(args.checkpoint)), exist_ok=True)
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -305,7 +308,9 @@ def main():
         val_ds = RHEEDHeatmapDataset(args.images_dir, args.heatmaps_dir, sorted(val_frames), size=size, augment=False)
         val_loader = DataLoader(val_ds, batch_size=len(val_ds), shuffle=False)
 
-    if torch.cuda.is_available():
+    if args.device != "auto":
+        device = args.device
+    elif torch.cuda.is_available():
         device = "cuda"
     elif torch.backends.mps.is_available():
         device = "mps"
